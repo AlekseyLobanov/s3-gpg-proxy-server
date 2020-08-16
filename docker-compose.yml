@@ -1,0 +1,19 @@
+version: '3'
+services:
+  minio:
+    image: "minio/minio:latest"
+    command: ["minio", "server", "/mnt/minio_data"]
+    ports:
+      - "9001:9000"
+    restart: on-failure
+    env_file: settings.env
+    environment:
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=miniostorage
+      - MINIO_BROWSER=off
+    volumes:
+      - "/tmp/minio_internal:/mnt/minio_data"
+  gpg_worker:
+    build: .
+    restart: on-failure
+    env_file: settings.env
