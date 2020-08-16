@@ -13,7 +13,22 @@ services:
       - MINIO_BROWSER=off
     volumes:
       - "/tmp/minio_internal:/mnt/minio_data"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.40'
+          memory: 80M
+        reservations:
+          cpus: '0.05'
+          memory: 30M
   gpg_worker:
     build: .
     restart: on-failure
     env_file: settings.env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 80M
+        reservations:
+          memory: 30M
