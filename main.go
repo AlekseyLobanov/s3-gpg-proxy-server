@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"os"
+
 	"os/exec"
 
 	"log"
@@ -12,8 +11,6 @@ import (
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/notification"
 )
-
-const TMP_FILE = "_tmp_out"
 
 func processEncryption(
 	config *AppConfig,
@@ -55,40 +52,31 @@ func processEncryption(
 
 	cmd := exec.Command("gpg", "--encrypt", "--recipient-file", ENCRYPT_KEY_PATH)
 	cmd.Stdin = objectReader
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err = cmd.Run()
+	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatalln(err)
 	}
-
-	f, err := os.Create(TMP_FILE)
-	if err != nil {
+	if err = cmd.Start(); err != nil {
 		log.Fatalln(err)
 	}
 
-	defer f.Close()
-	f.Write(out.Bytes())
-
-	tmp_file, err := os.Open(TMP_FILE)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer tmp_file.Close()
-	defer os.Remove(TMP_FILE)
-
-	uploadInfo, err := targetMinio.PutObject(
+	uploadInfo, err_put := targetMinio.PutObject(
 		context.Background(),
 		bucket,
 		name+".gpg",
-		tmp_file,
+		stdout,
 		-1,
 		minio.PutObjectOptions{
 			ContentType:  "application/octet-stream",
 			UserMetadata: map[string]string{"gpg": "true"},
 		},
 	)
-	if err != nil {
+
+	if err = cmd.Wait(); err != nil {
+		return err
+	}
+
+	if err_put != nil {
 		fmt.Println(err)
 		return nil
 	}
