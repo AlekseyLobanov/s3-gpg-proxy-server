@@ -8,7 +8,10 @@ but can save results to S3-compatible server.
 This applicaion provides additional local security layer that encrypts _locally_ all of received files
 before sending to target
 
-## How to use
+## Dependencies
+You need Docker [Engine](https://docs.docker.com/engine/install/) and Docker [Compose](https://docs.docker.com/compose/install/).
+
+## Usage
 
 1. `cp example_settings.env settings.env`
 2. Set correct credentials to target S3 server in `settings.env`
@@ -29,10 +32,15 @@ It is containerized application,
 only encrypted data may be uploaded to target server.
 And no one can access this containers from the Internet.
 
-### I never used Docker. Where I can get it?
-You need Docker [Engine](https://docs.docker.com/engine/install/) and Docker [Compose](https://docs.docker.com/compose/install/).
-It is possible to install this tools on almost any existing server,
-even on RaspberriPi.
+### Is it possible to use this without Docker?
+Docker provides additional security,
+which is important for applications like this.
+It also simplifies configuring.
+
+This solution is not just one application,
+but Minio server + application on golang.
+You can run it without Docker,
+but this is not recommended and not supported.
 
 ### Is it production ready?
 Quick answer is **no**.
